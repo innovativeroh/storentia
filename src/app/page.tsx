@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Hero } from '@/components/Hero';
-import { StorefrontGrid } from '@/components/StorefrontGrid';
-import { LogoCloud } from '@/components/ui/logo-cloud-2';
-import { FeatureScroll } from '@/components/FeatureScroll';
-import IntegrationHero from '@/components/ui/integration-hero';
-import { FAQ } from '@/components/FAQ';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from "framer-motion";
+import { useState } from "react";
+import { FAQ } from "@/components/FAQ";
+import { FeatureScroll } from "@/components/FeatureScroll";
+import { Hero } from "@/components/Hero";
+import { Pricing } from "@/components/Pricing";
+import { StorefrontGrid } from "@/components/StorefrontGrid";
+import IntegrationHero from "@/components/ui/integration-hero";
+import { LogoCloud } from "@/components/ui/logo-cloud-2";
 
 export default function Home() {
   const [hoveredImage, setHoveredImage] = useState<string | null>(null);
 
   return (
     <main className="min-h-screen relative">
-
       {/* Dynamic background — only active over the storefront grid area */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <AnimatePresence>
@@ -28,8 +28,8 @@ export default function Home() {
               className="absolute inset-0"
               style={{
                 backgroundImage: `url(${hoveredImage})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
+                backgroundSize: "cover",
+                backgroundPosition: "center",
               }}
             />
           )}
@@ -44,11 +44,13 @@ export default function Home() {
 
         {/* Logo Cloud Section */}
         <section id="clients" className="py-24 px-6 border-b border-zinc-900 overflow-hidden">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="mb-12 text-center font-medium text-xl text-zinc-400 tracking-tight md:text-3xl font-hanken">
-              Companies we{' '}
-              <span className="font-semibold text-white">collaborate</span> with.
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="mb-4 font-medium text-xs text-zinc-500 uppercase tracking-widest font-roboto">
+              Partnerships
             </h2>
+            <h3 className="mb-12 text-2xl md:text-3xl font-bold text-white tracking-tight font-hanken max-w-2xl mx-auto">
+              Companies we <span className="font-semibold text-zinc-400">collaborate</span> with.
+            </h3>
             <LogoCloud />
           </div>
         </section>
@@ -58,6 +60,9 @@ export default function Home() {
 
         {/* Integration Hero Section */}
         <IntegrationHero />
+
+        {/* Pricing Section */}
+        <Pricing />
 
         {/* FAQ Section */}
         <FAQ />

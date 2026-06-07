@@ -1,96 +1,98 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import Image from 'next/image';
-import { useTheme } from 'next-themes';
-import { useEffect, useState } from 'react';
-import { HiOutlineSun, HiOutlineMoon } from 'react-icons/hi';
-import { Menu, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from "framer-motion";
+import { Menu, X } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { FiArrowRight } from "react-icons/fi";
 
 export function Header() {
-  const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const navLinks = ['Pricing', 'Experience', 'Portfolio', 'Clients', 'FAQ'];
+  const navLinks = ["Pricing", "Experience", "Portfolio", "Clients", "FAQ"];
 
-  // Prevent hydration mismatch
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
-  // Handle body scroll lock
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
   }, [isOpen]);
 
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
-    e.preventDefault();
+  const scrollToId = useCallback((targetId: string) => {
     const element = document.getElementById(targetId);
-    if (element) {
-      const headerOffset = 90; // matches scroll-padding-top
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.scrollY - headerOffset;
+    if (!element) return false;
 
-      const startY = window.scrollY;
-      const difference = offsetPosition - startY;
-      const duration = 600; // Constant 600ms scroll transition
-      const startTime = performance.now();
-
-      const easeInOutCubic = (t: number) => {
-        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-      };
-
-      const animateScroll = () => {
-        const currentTime = performance.now();
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const ease = easeInOutCubic(progress);
-
-        window.scrollTo(0, startY + difference * ease);
-
-        if (progress < 1) {
-          requestAnimationFrame(animateScroll);
-        } else {
-          window.history.pushState(null, '', `#${targetId}`);
-        }
-      };
-
-      requestAnimationFrame(animateScroll);
-    }
-  };
-
-  const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
+    const headerOffset = 90;
+    const offsetPosition = element.getBoundingClientRect().top + window.scrollY - headerOffset;
     const startY = window.scrollY;
+    const difference = offsetPosition - startY;
     const duration = 600;
     const startTime = performance.now();
 
-    const easeInOutCubic = (t: number) => {
-      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-    };
+    const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
 
     const animateScroll = () => {
-      const currentTime = performance.now();
-      const elapsed = currentTime - startTime;
+      const elapsed = performance.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      const ease = easeInOutCubic(progress);
-
-      window.scrollTo(0, startY * (1 - ease));
-
+      window.scrollTo(0, startY + difference * easeInOutCubic(progress));
       if (progress < 1) {
         requestAnimationFrame(animateScroll);
       } else {
-        window.history.pushState(null, '', '/');
+        window.history.pushState(null, "", `#${targetId}`);
       }
     };
 
     requestAnimationFrame(animateScroll);
-  };
+    return true;
+  }, []);
+
+  const handleNavClick = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
+      e.preventDefault();
+      if (!scrollToId(targetId)) {
+        router.push(`/#${targetId}`);
+      }
+    },
+    [router, scrollToId],
+  );
+
+  const handleLogoClick = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>) => {
+      e.preventDefault();
+      if (window.location.pathname !== "/") {
+        router.push("/");
+        return;
+      }
+
+      const startY = window.scrollY;
+      const duration = 600;
+      const startTime = performance.now();
+      const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
+
+      const animateScroll = () => {
+        const elapsed = performance.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        window.scrollTo(0, startY * (1 - easeInOutCubic(progress)));
+        if (progress < 1) {
+          requestAnimationFrame(animateScroll);
+        } else {
+          window.history.pushState(null, "", "/");
+        }
+      };
+
+      requestAnimationFrame(animateScroll);
+    },
+    [router],
+  );
 
   if (!mounted) return null;
 
@@ -100,11 +102,7 @@ export function Header() {
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           {/* Logo - Left */}
           <div className="md:w-1/4 w-auto">
-            <Link 
-              href="/" 
-              onClick={handleLogoClick}
-              className="relative h-8 w-24 block"
-            >
+            <Link href="/" onClick={handleLogoClick} className="relative h-8 w-24 block">
               <Image
                 src="/logo-white.png"
                 alt="Storentia Logo"
@@ -119,11 +117,11 @@ export function Header() {
           <nav className="flex-1 hidden md:flex justify-center overflow-hidden">
             <ul className="flex items-center gap-x-6 lg:gap-x-10 text-[13px] font-medium text-zinc-400">
               {navLinks.map((link) => {
-                const targetId = link.toLowerCase().replace(/\s+/g, '-');
+                const targetId = link.toLowerCase().replace(/\s+/g, "-");
                 return (
                   <li key={link}>
-                    <Link 
-                      href={`#${targetId}`} 
+                    <Link
+                      href={`#${targetId}`}
                       onClick={(e) => handleNavClick(e, targetId)}
                       className="hover:text-white transition-colors whitespace-nowrap"
                     >
@@ -134,19 +132,17 @@ export function Header() {
               })}
             </ul>
           </nav>
-          
+
           {/* Actions - Right */}
           <div className="md:w-1/4 w-auto flex items-center justify-end gap-4 lg:gap-6 text-sm">
-            <Link href="#" className="text-zinc-400 hover:text-white transition-colors hidden sm:block whitespace-nowrap">
-              Log in
-            </Link>
-            <Link 
-              href="#" 
-              className="text-white px-5 py-2 rounded-full font-medium border border-zinc-800 hover:bg-zinc-900 transition-all hidden sm:block whitespace-nowrap"
+            <Link
+              href="https://app.storentia.com/login"
+              className="group inline-flex items-center gap-2 bg-white text-black px-5 py-2 rounded-full font-semibold text-xs md:text-sm hover:bg-zinc-100 transition-all duration-200 hidden sm:flex whitespace-nowrap"
             >
-              Sign up
+              Get Started
+              <FiArrowRight className="transition-transform duration-200 group-hover:translate-x-0.5" />
             </Link>
-            
+
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -162,7 +158,7 @@ export function Header() {
       {/* Mobile Overlay */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -185,20 +181,20 @@ export function Header() {
                 variants={{
                   visible: {
                     transition: {
-                      staggerChildren: 0.1
-                    }
-                  }
+                      staggerChildren: 0.1,
+                    },
+                  },
                 }}
                 className="flex flex-col items-center gap-8"
               >
                 {navLinks.map((link) => {
-                  const targetId = link.toLowerCase().replace(/\s+/g, '-');
+                  const targetId = link.toLowerCase().replace(/\s+/g, "-");
                   return (
                     <motion.div
                       key={link}
                       variants={{
                         hidden: { opacity: 0, y: 20 },
-                        visible: { opacity: 1, y: 0 }
+                        visible: { opacity: 1, y: 0 },
                       }}
                     >
                       <Link
@@ -214,26 +210,20 @@ export function Header() {
                     </motion.div>
                   );
                 })}
-                <motion.div 
+                <motion.div
                   variants={{
                     hidden: { opacity: 0, y: 20 },
-                    visible: { opacity: 1, y: 0 }
+                    visible: { opacity: 1, y: 0 },
                   }}
                   className="flex flex-col items-center gap-6 mt-8"
                 >
-                  <Link 
-                    href="#" 
+                  <Link
+                    href="https://app.storentia.com/login"
                     onClick={() => setIsOpen(false)}
-                    className="text-2xl text-zinc-400 hover:text-white transition-colors"
+                    className="group inline-flex items-center gap-2 bg-white text-black px-8 py-3 rounded-full font-semibold text-lg hover:bg-zinc-100 transition-all duration-200"
                   >
-                    Log in
-                  </Link>
-                  <Link 
-                    href="#" 
-                    onClick={() => setIsOpen(false)}
-                    className="text-2xl text-white px-8 py-3 rounded-full font-medium border border-zinc-800 hover:bg-zinc-900 transition-all"
-                  >
-                    Sign up
+                    Get Started
+                    <FiArrowRight className="transition-transform duration-200 group-hover:translate-x-0.5" />
                   </Link>
                 </motion.div>
               </motion.div>
